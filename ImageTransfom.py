@@ -23,4 +23,5 @@ class ImageTransform():
         return self.data_transform[phase](img)
 
 if __name__ == "__main__":
+    
     pass
