@@ -50,12 +50,7 @@ val_dataset = IsicDataset(
     transform = ImageTransform(size, mean, std),
     phase = 'val')
 
-#データセットのサイズとラベルの確認
-'''
-index = 0
-print(val_dataset.__getitem__(index)[0].size())
-print(val_dataset.__getitem__(index)[1])
-'''
+
 #DataLoaderを作成
 batch_size = 32
 
