@@ -1,7 +1,3 @@
-data/
-ISIC-2017_Training_Data/
-ISIC-2017_Validation_Data/
-ISIC-2017_Test_v2_Data/
-*.csv
+usocky/data/
 __pycache__/
 .vscode/
