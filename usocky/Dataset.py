@@ -68,7 +68,7 @@ def create_dataloader(batch_size, train_dataset, val_dataset):
         val_dataset, batch_size=batch_size, shuffle=True
     )
 
-    dataloader_dict = {"train": train_dataloader, "val": val_dataloader}
+    dataloader_dict = {"train": train_dataloader, "test": val_dataloader}
 
     return dataloader_dict
 

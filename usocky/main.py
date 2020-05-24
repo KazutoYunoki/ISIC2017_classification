@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pathlib
 
 import torch
 import torch.nn as nn
@@ -7,6 +8,7 @@ from torchvision import models
 
 import hydra
 import logging
+
 
 from image_transform import ImageTransform
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
@@ -32,7 +34,9 @@ def main(cfg):
     plt.imshow(img)
     plt.show()
 
-    transform = ImageTransform(size, mean, std)
+
+    transform = 
+    (size, mean, std)
     img_transformed = transform(img, phase = 'train')
 
     img_transformed = img_transformed.numpy().transpose((1, 2, 0))
@@ -99,7 +103,7 @@ def main(cfg):
 
     # GPU初期設定
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+    print("使用デバイス: ", device)
     # ネットワークをGPUへ
     net.to(device)
     torch.backends.cudnn.benchmark = True
@@ -146,6 +150,11 @@ def main(cfg):
     ax_acc.legend()
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
+
+    # パラメータの保存
+    current_dir = pathlib.Path(__file__).resolve().parent
+    save_path = current_dir / "weights_fine_tuning.pth"
+    torch.save(net.state_dict(), save_path)
 
 
 if __name__ == "__main__":

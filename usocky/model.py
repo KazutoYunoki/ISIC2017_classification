@@ -96,7 +96,7 @@ def test_model(net, test_dataloader, criterion):
         inputs = inputs.to(device)
         labels = labels.to(device)
         with torch.set_grad_enabled(False):
-            outputs = net(input)
+            outputs = net(inputs)
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
 
