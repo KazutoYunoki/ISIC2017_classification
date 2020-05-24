@@ -34,8 +34,6 @@ def main(cfg):
     plt.imshow(img)
     plt.show()
 
-
-    transform = 
     (size, mean, std)
     img_transformed = transform(img, phase = 'train')
 
