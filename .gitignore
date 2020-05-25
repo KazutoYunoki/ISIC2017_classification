@@ -2,3 +2,4 @@ usocky/data/
 __pycache__/
 .vscode/
 outputs/
+nohup.out
