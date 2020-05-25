@@ -1,4 +1,5 @@
 usocky/data/
+usocky/weights_fine_tuning.pth
 __pycache__/
 .vscode/
 outputs/
