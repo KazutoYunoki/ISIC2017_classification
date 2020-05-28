@@ -8,7 +8,7 @@ import os.path as osp
 from image_transform import ImageTransform
 
 
-def make_datapath_list(csv_file=None, data_dir=None):
+def make_datapath_list(csv_file, data_id, data_dir):
     """
     画像へのパスを作成するメソッド
 
@@ -31,7 +31,7 @@ def make_datapath_list(csv_file=None, data_dir=None):
     csv_file = pd.read_csv(current_dir / "data" / csv_file)
 
     # csvファイルからimage_idの列を取得
-    image_id = csv_file["image_id"]
+    image_id = csv_file[data_id]
 
     path_list = []
 
@@ -74,11 +74,14 @@ def create_dataloader(batch_size, train_dataset, val_dataset):
 
 
 class IsicDataset(data.Dataset):
-    def __init__(self, file_list, transform=None, phase="train", csv_file=None):
+    def __init__(
+        self, file_list, transform=None, phase="train", csv_file=None, label_name=None
+    ):
         self.file_list = file_list
         self.transform = transform
         self.phase = phase
         self.csv_file = csv_file
+        self.label_name = label_name
 
     def __len__(self):
         return len(self.file_list)
@@ -97,12 +100,12 @@ class IsicDataset(data.Dataset):
         csv_file = pd.read_csv(current_dir / "data" / self.csv_file)
 
         # melanomaのラベルを取得
-        mel_label = csv_file["melanoma"]
+        mel_label = csv_file[self.label_name]
 
         # labelのデータ型をfloat → int64
         mel_label = mel_label.astype("int64")
 
-        # index番目はラベルを取得
+        # index番目のラベルを取得
         label = mel_label[index]
 
         return img_transformed, label

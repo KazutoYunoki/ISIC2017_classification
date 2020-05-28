@@ -21,8 +21,12 @@ log = logging.getLogger(__name__)
 @hydra.main(config_path="conf/config.yaml")
 def main(cfg):
     # 訓練データと検証データのパス
-    train_list = make_datapath_list(csv_file=cfg.csv.train, data_dir=cfg.data.train_dir)
-    val_list = make_datapath_list(csv_file=cfg.csv.val, data_dir=cfg.data.val_dir)
+    train_list = make_datapath_list(
+        csv_file=cfg.csv.train, data_id=cfg.csv.id, data_dir=cfg.data.train_dir
+    )
+    val_list = make_datapath_list(
+        csv_file=cfg.csv.val, data_id=cfg.csv.id, data_dir=cfg.data.val_dir
+    )
 
     # 画像表示と確認
     """
@@ -48,15 +52,17 @@ def main(cfg):
         transform=ImageTransform(cfg.image.size, cfg.image.mean, cfg.image.std),
         phase="train",
         csv_file=cfg.csv.train,
+        label_name=cfg.csv.label,
     )
     val_dataset = IsicDataset(
         file_list=val_list,
         transform=ImageTransform(cfg.image.size, cfg.image.mean, cfg.image.std),
         phase="val",
         csv_file=cfg.csv.val,
+        label_name=cfg.csv.label,
     )
 
-    # 辞書型'train'と'val'のバッチサイズandシャッフル
+    # 辞書型'train'と'val'のデータローダを作成
     dataloaders_dict = create_dataloader(
         batch_size=cfg.image.batch_size,
         train_dataset=train_dataset,
@@ -71,8 +77,7 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    use_pretrained = True
-    net = models.resnet50(pretrained=use_pretrained)
+    net = models.resnet50(pretrained=True)
 
     net.fc = nn.Linear(in_features=2048, out_features=2, bias=True)
     net.train()
@@ -102,6 +107,7 @@ def main(cfg):
     # GPU初期設定
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("使用デバイス: ", device)
+
     # ネットワークをGPUへ
     net.to(device)
     torch.backends.cudnn.benchmark = True
