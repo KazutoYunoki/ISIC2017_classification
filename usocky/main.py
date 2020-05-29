@@ -12,7 +12,7 @@ import logging
 import seaborn as sns
 from image_transform import ImageTransform
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
-from model import train_model, test_model
+from model import train_model, test_model, evaluate_model, calculate_efficiency
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -130,7 +130,6 @@ def main(cfg):
     test_loss = []
     test_acc = []
 
-    """
     # 学習と検証
     for epoch in range(num_epochs):
 
@@ -162,38 +161,49 @@ def main(cfg):
     fig_loss.savefig("loss.png")
 
     fig_acc, ax_acc = plt.subplots(figsize=(10, 10))
-    ax_acc.plot(r
-    ange(1, num_epochs + 1, 1), train_acc, label="train_acc")
+    ax_acc.plot(range(1, num_epochs + 1, 1), train_acc, label="train_acc")
     ax_acc.plot(range(1, num_epochs + 1, 1), test_acc, label="test_acc")
     ax_acc.legend()
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
-    
 
     # パラメータの保存
     current_dir = pathlib.Path(__file__).resolve().parent
     save_path = current_dir / "weights_fine_tuning.pth"
     torch.save(net.state_dict(), save_path)
-    """
 
     # Pytorchのネットワークパラメータのロード
     # 現在のディレクトリを取得
     current_dir = pathlib.Path(__file__).resolve().parent
     print(current_dir)
 
+    """
+    #学習済みのパラメータを使用したいとき
     load_path = str(current_dir) + "/weights_fine_tuning.pth"
-    load_weights = torch.load(load_path, map_location="cpu")
+    load_weights = torch.load(load_path)
     net.load_state_dict(load_weights)
+    """
 
-    evaluate_history = test_model(net, dataloaders_dict["test"], criterion)
+    evaluate_history = evaluate_model(net, dataloaders_dict["test"], criterion)
     print(evaluate_history["confusion_matrix"])
 
+    # 性能評価指標の計算（正解率、適合率、再現率、F1値)
+    efficienct = calculate_efficiency(evaluate_history["confusion_matrix"])
+
+    log.info("正解率: " + str(efficienct["accuracy"]))
+    log.info("適合率: " + str(efficienct["precision"]))
+    log.info("再現率: " + str(efficienct["recall"]))
+    log.info("f1値 :" + str(efficienct["f1"]))
+
     # 混同行列の作成と表示
-    fig, ax = plt.subplots(figsize=(10, 10))
-    sns.heatmap(evaluate_history["confusion_matlix"], annot=True, fmt="d", cmap="Blues")
-    ax.set_title("confusion_matrix")
-    fig.savefig("confusion_matrix.png")
-    plt.show()
+    fig_conf, ax_conf = plt.subplots(figsize=(10, 10))
+    sns.heatmap(
+        evaluate_history["confusion_matrix"], annot=True, fmt="d", cmap="Reds",
+    )
+    ax_conf.set_title("confusion_matrix")
+    ax_conf.set_xlabel("Predicted label")
+    ax_conf.set_ylabel("True label")
+    fig_conf.savefig("confusion_matrix.png")
 
 
 if __name__ == "__main__":
