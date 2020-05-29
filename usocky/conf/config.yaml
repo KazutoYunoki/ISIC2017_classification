@@ -31,23 +31,22 @@ train:
     - fc.weight
     - fc.bias
 
-
 #最適化手法のパラメータ
 optimizer:
   algorithm: momentum_SDG
   lr: 0.0001
   momentum: 0.9
 
-
 #画像のデータが入っているフォルダ(./data/に置く)
 data:
   train_dir: ISIC-2017_Training_Data
   val_dir: ISIC-2017_Validation_Data
+  test_dir: ISIC-2017_Test_v2_Data
 
 #csvファイル(./data/に置く)
 csv:
-  id : image_id
-  label : melanoma
+  id: image_id
+  label: melanoma
   train: ISIC-2017_Training_Part3_GroundTruth (1).csv
   val: ISIC-2017_Validation_Part3_GroundTruth.csv
-  test: ISIC-2017_Validation_Part3_GroundTruth.csv
+  test: ISIC-2017_Test_v2_Part3_GroundTruth.csv

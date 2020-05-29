@@ -2,6 +2,8 @@ from tqdm import tqdm
 import torch
 import logging
 
+from sklearn.metrics import confusion_matrix
+
 log = logging.getLogger(__name__)
 
 
@@ -91,6 +93,10 @@ def test_model(net, test_dataloader, criterion):
 
     epoch_loss = 0.0
     epoch_corrects = 0
+
+    predlist = torch.zeros(0, dtype=torch.long, device=device)
+    truelist = torch.zeros(0, dtype=torch.long, device=device)
+
     for inputs, labels in tqdm(test_dataloader, leave=False):
         # GPUにデータを送る
         inputs = inputs.to(device)
@@ -100,6 +106,14 @@ def test_model(net, test_dataloader, criterion):
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
 
+            print(labels)
+            print(preds)
+
+            predlist = torch.cat([predlist, preds.view(-1).cpu()])
+            truelist = torch.cat([truelist, labels.view(-1).cpu()])
+
+        cm = confusion_matrix(truelist.cpu().numpy(), predlist.cpu().numpy())
+
         epoch_loss += loss.item() * inputs.size(0)
         epoch_corrects += torch.sum(preds == labels.data)
 
@@ -108,4 +122,4 @@ def test_model(net, test_dataloader, criterion):
 
     log.info("Test Loss: {:.4f} Acc: {:.4f}".format(epoch_loss, epoch_acc))
 
-    return {"test_loss": epoch_loss, "test_acc": epoch_acc}
+    return {"test_loss": epoch_loss, "test_acc": epoch_acc, "confusion_matrix": cm}

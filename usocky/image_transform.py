@@ -22,6 +22,14 @@ class ImageTransform:
                     transforms.Normalize(mean, std),
                 ]
             ),
+            "test": transforms.Compose(
+                [
+                    transforms.Resize(resize),
+                    transforms.CenterCrop(resize),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean, std),
+                ]
+            ),
         }
 
     def __call__(self, img, phase="train"):

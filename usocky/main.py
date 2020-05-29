@@ -9,7 +9,7 @@ from torchvision import models
 import hydra
 import logging
 
-
+import seaborn as sns
 from image_transform import ImageTransform
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
 from model import train_model, test_model
@@ -26,6 +26,9 @@ def main(cfg):
     )
     val_list = make_datapath_list(
         csv_file=cfg.csv.val, data_id=cfg.csv.id, data_dir=cfg.data.val_dir
+    )
+    test_list = make_datapath_list(
+        csv_file=cfg.csv.test, data_id=cfg.csv.id, data_dir=cfg.data.test_dir
     )
 
     # 画像表示と確認
@@ -62,11 +65,20 @@ def main(cfg):
         label_name=cfg.csv.label,
     )
 
-    # 辞書型'train'と'val'のデータローダを作成
+    test_dataset = IsicDataset(
+        file_list=test_list,
+        transform=ImageTransform(cfg.image.size, cfg.image.mean, cfg.image.std),
+        phase="test",
+        csv_file=cfg.csv.test,
+        label_name=cfg.csv.label,
+    )
+
+    # 辞書型'train'と'val'と'test'のデータローダを作成
     dataloaders_dict = create_dataloader(
         batch_size=cfg.image.batch_size,
         train_dataset=train_dataset,
         val_dataset=val_dataset,
+        test_dataset=test_dataset,
     )
 
     """
@@ -118,6 +130,7 @@ def main(cfg):
     test_loss = []
     test_acc = []
 
+    """
     # 学習と検証
     for epoch in range(num_epochs):
 
@@ -134,7 +147,7 @@ def main(cfg):
         train_acc.append(train_history["train_acc"])
 
         # 検証
-        test_history = test_model(net, dataloaders_dict["test"], criterion)
+        test_history = test_model(net, dataloaders_dict["val"], criterion)
 
         # 検証したlossと認識率のリストを作成
         test_loss.append(test_history["test_loss"])
@@ -149,16 +162,38 @@ def main(cfg):
     fig_loss.savefig("loss.png")
 
     fig_acc, ax_acc = plt.subplots(figsize=(10, 10))
-    ax_acc.plot(range(1, num_epochs + 1, 1), train_acc, label="train_acc")
+    ax_acc.plot(r
+    ange(1, num_epochs + 1, 1), train_acc, label="train_acc")
     ax_acc.plot(range(1, num_epochs + 1, 1), test_acc, label="test_acc")
     ax_acc.legend()
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
+    
 
     # パラメータの保存
     current_dir = pathlib.Path(__file__).resolve().parent
     save_path = current_dir / "weights_fine_tuning.pth"
     torch.save(net.state_dict(), save_path)
+    """
+
+    # Pytorchのネットワークパラメータのロード
+    # 現在のディレクトリを取得
+    current_dir = pathlib.Path(__file__).resolve().parent
+    print(current_dir)
+
+    load_path = str(current_dir) + "/weights_fine_tuning.pth"
+    load_weights = torch.load(load_path, map_location="cpu")
+    net.load_state_dict(load_weights)
+
+    evaluate_history = test_model(net, dataloaders_dict["test"], criterion)
+    print(evaluate_history["confusion_matrix"])
+
+    # 混同行列の作成と表示
+    fig, ax = plt.subplots(figsize=(10, 10))
+    sns.heatmap(evaluate_history["confusion_matlix"], annot=True, fmt="d", cmap="Blues")
+    ax.set_title("confusion_matrix")
+    fig.savefig("confusion_matrix.png")
+    plt.show()
 
 
 if __name__ == "__main__":

@@ -44,7 +44,7 @@ def make_datapath_list(csv_file, data_id, data_dir):
     return path_list
 
 
-def create_dataloader(batch_size, train_dataset, val_dataset):
+def create_dataloader(batch_size, train_dataset, val_dataset, test_dataset):
     """
     データローダを作成する関数
     Parameters
@@ -68,7 +68,15 @@ def create_dataloader(batch_size, train_dataset, val_dataset):
         val_dataset, batch_size=batch_size, shuffle=True
     )
 
-    dataloader_dict = {"train": train_dataloader, "test": val_dataloader}
+    test_dataloader = torch.utils.data.DataLoader(
+        test_dataset, batch_size=batch_size, shuffle=True
+    )
+
+    dataloader_dict = {
+        "train": train_dataloader,
+        "val": val_dataloader,
+        "test": test_dataloader,
+    }
 
     return dataloader_dict
 
