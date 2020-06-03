@@ -2,7 +2,7 @@ from tqdm import tqdm
 import torch
 import logging
 
-from sklearn.metrics import confusion_matrix, plot_confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix
 
 log = logging.getLogger(__name__)
 

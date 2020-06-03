@@ -1,15 +1,15 @@
 import matplotlib.pyplot as plt
 import pathlib
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 
+
 import hydra
 import logging
-
 import seaborn as sns
+
 from image_transform import ImageTransform
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
 from model import train_model, test_model, evaluate_model, calculate_efficiency
@@ -41,13 +41,14 @@ def main(cfg):
     plt.imshow(img)
     plt.show()
 
-    (size, mean, std)
-    img_transformed = transform(img, phase = 'train')
+    transform = ImageTransform(size, mean, std)
+    img_transformed = transform(img)
 
     img_transformed = img_transformed.numpy().transpose((1, 2, 0))
     img_transformed = np.clip(img_transformed, 0, 1)
     plt.imshow(img_transformed)
     plt.show()
+
     """
     # データセットの作成
     train_dataset = IsicDataset(
@@ -167,17 +168,12 @@ def main(cfg):
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
 
-    # パラメータの保存
-    current_dir = pathlib.Path(__file__).resolve().parent
-    save_path = current_dir / "weights_fine_tuning.pth"
-    torch.save(net.state_dict(), save_path)
-
+    """
     # Pytorchのネットワークパラメータのロード
     # 現在のディレクトリを取得
     current_dir = pathlib.Path(__file__).resolve().parent
     print(current_dir)
-
-    """
+    
     #学習済みのパラメータを使用したいとき
     load_path = str(current_dir) + "/weights_fine_tuning.pth"
     load_weights = torch.load(load_path)
@@ -204,6 +200,11 @@ def main(cfg):
     ax_conf.set_xlabel("Predicted label")
     ax_conf.set_ylabel("True label")
     fig_conf.savefig("confusion_matrix.png")
+
+    # パラメータの保存
+    current_dir = pathlib.Path(__file__).resolve().parent
+    save_path = current_dir / "weights_fine_tuning.pth"
+    torch.save(net.state_dict(), save_path)
 
 
 if __name__ == "__main__":

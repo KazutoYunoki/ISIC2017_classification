@@ -10,6 +10,7 @@ class ImageTransform:
                     transforms.RandomResizedCrop(resize, scale=(0.5, 1.0)),
                     transforms.CenterCrop(resize),
                     transforms.RandomHorizontalFlip(),
+                    transforms.RandomVerticalFlip(),
                     transforms.ToTensor(),
                     transforms.Normalize(mean, std),
                 ]
