@@ -14,6 +14,7 @@ from image_transform import ImageTransform
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
 from model import train_model, test_model, evaluate_model, calculate_efficiency
 
+
 # A logger for this file
 log = logging.getLogger(__name__)
 
@@ -109,9 +110,12 @@ def main(cfg):
         else:
             param.requires_grad = False
 
+    # 調整するパラメータ名をログに保存
+    log.info(params_to_update)
+
     # 最適化手法の設定
     optimizer = optim.SGD(
-        params=params_to_update, lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum
+        params=net.parameters(), lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum,
     )
 
     # 学習回数を設定ファイルから読み込む
@@ -173,7 +177,6 @@ def main(cfg):
     # 現在のディレクトリを取得
     current_dir = pathlib.Path(__file__).resolve().parent
     print(current_dir)
-    
     #学習済みのパラメータを使用したいとき
     load_path = str(current_dir) + "/weights_fine_tuning.pth"
     load_weights = torch.load(load_path)
@@ -203,7 +206,7 @@ def main(cfg):
 
     # パラメータの保存
     current_dir = pathlib.Path(__file__).resolve().parent
-    save_path = current_dir / "weights_fine_tuning.pth"
+    save_path = current_dir / "weights_path_2.pth"
     torch.save(net.state_dict(), save_path)
 
 

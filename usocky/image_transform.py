@@ -11,6 +11,7 @@ class ImageTransform:
                     transforms.CenterCrop(resize),
                     transforms.RandomHorizontalFlip(),
                     transforms.RandomVerticalFlip(),
+                    transforms.RandomRotation((-180, 180)),
                     transforms.ToTensor(),
                     transforms.Normalize(mean, std),
                 ]
