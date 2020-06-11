@@ -91,13 +91,15 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    net = models.resnet50(pretrained=True)
+    net = models.vgg16(pretrained=True)
+    log.info(net)
 
-    net.fc = nn.Linear(in_features=2048, out_features=2, bias=True)
+    net.classifier[6] = nn.Linear(in_features=4096, out_features=2)
     net.train()
 
     # 損失関数の設定
     criterion = nn.CrossEntropyLoss()
+    log.info(net)
 
     # 調整するパラメータの設定
     params_to_update = []
@@ -107,6 +109,7 @@ def main(cfg):
         if name in update_params_names:
             param.requires_grad = True
             params_to_update.append(param)
+            log.info("更新するパラメータ名: " + str(name))
         else:
             param.requires_grad = False
 
@@ -115,8 +118,9 @@ def main(cfg):
 
     # 最適化手法の設定
     optimizer = optim.SGD(
-        params=net.parameters(), lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum,
+        params=params_to_update, lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum
     )
+    log.info(optimizer)
 
     # 学習回数を設定ファイルから読み込む
     num_epochs = cfg.train.num_epochs

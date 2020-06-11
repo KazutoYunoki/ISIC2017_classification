@@ -48,7 +48,6 @@ def train_model(net, train_dataloader, criterion, optimizer):
 
         with torch.set_grad_enabled(True):
             outputs = net(inputs)
-            outputs = F.softmax(outputs, 1)
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
 
@@ -101,9 +100,7 @@ def test_model(net, test_dataloader, criterion):
         labels = labels.to(device)
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
-            outputs = F.softmax(outputs, 1)
             loss = criterion(outputs, labels)
-            log.info(outputs)
             _, preds = torch.max(outputs, 1)
 
         epoch_loss += loss.item() * inputs.size(0)
@@ -138,8 +135,7 @@ def evaluate_model(net, test_dataloader, criterion):
         labels = labels.to(device)
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
-            outputs = F.softmax(outputs, 1)
-            log.info(outputs)
+            log.info(F.softmax(outputs, 1))
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
 
