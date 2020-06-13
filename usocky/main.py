@@ -92,14 +92,14 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    net = models.resnet18(pretrained=True)
+    net = models.vgg16_bn(pretrained=True)
     log.info(net)
 
-    net.fc = nn.Linear(in_features=512, out_features=2)
+    net.fc = nn.Linear(in_features=4096, out_features=1)
     net.train()
 
     # 損失関数の設定
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCELoss()
     log.info(net)
 
     # 調整するパラメータの設定

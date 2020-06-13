@@ -99,9 +99,12 @@ class IsicDataset(data.Dataset):
         img = Image.open(img_path)
         img_transformed = self.transform(img, self.phase)
 
+<<<<<<< HEAD
         # 画像のパス出力
         # print(img_path)
 
+=======
+>>>>>>> 8068c85... BCELossの閾値評価に変更。
         # 現在のディレクトリを取得
         current_dir = pathlib.Path(__file__).resolve().parent
 
