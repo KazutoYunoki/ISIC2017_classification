@@ -99,8 +99,6 @@ class IsicDataset(data.Dataset):
         img = Image.open(img_path)
         img_transformed = self.transform(img, self.phase)
 
-        label = []
-
         # 現在のディレクトリを取得
         current_dir = pathlib.Path(__file__).resolve().parent
 

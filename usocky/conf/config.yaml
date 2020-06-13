@@ -7,16 +7,20 @@ image:
 
 #モデルのパラメータ
 train:
-  num_epochs: 100
+  num_epochs: 1
   #updateするパラメータ名
   update_param_names:
+    - classifier.0.weight
+    - classifier.0.bias
+    - classifier.3.weight
+    - classifier.3.bias
     - classifier.6.weight
     - classifier.6.bias
 
 #最適化手法のパラメータ
 optimizer:
   algorithm: momentum_SDG
-  lr: 0.001
+  lr: 0.00001
   momentum: 0.9
 
 #画像のデータが入っているフォルダ(./data/に置く)
