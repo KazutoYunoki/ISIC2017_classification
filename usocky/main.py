@@ -1,18 +1,20 @@
 import matplotlib.pyplot as plt
 import pathlib
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 
+
 import hydra
 import logging
-
+import seaborn as sns
 
 from image_transform import ImageTransform
+
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
-from model import train_model, test_model
+from model import train_model, test_model, evaluate_model, calculate_efficiency
+
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -27,6 +29,9 @@ def main(cfg):
     val_list = make_datapath_list(
         csv_file=cfg.csv.val, data_id=cfg.csv.id, data_dir=cfg.data.val_dir
     )
+    test_list = make_datapath_list(
+        csv_file=cfg.csv.test, data_id=cfg.csv.id, data_dir=cfg.data.test_dir
+    )
 
     # 画像表示と確認
     """
@@ -38,13 +43,14 @@ def main(cfg):
     plt.imshow(img)
     plt.show()
 
-    (size, mean, std)
-    img_transformed = transform(img, phase = 'train')
+    transform = ImageTransform(size, mean, std)
+    img_transformed = transform(img)
 
     img_transformed = img_transformed.numpy().transpose((1, 2, 0))
     img_transformed = np.clip(img_transformed, 0, 1)
     plt.imshow(img_transformed)
     plt.show()
+
     """
     # データセットの作成
     train_dataset = IsicDataset(
@@ -62,11 +68,20 @@ def main(cfg):
         label_name=cfg.csv.label,
     )
 
-    # 辞書型'train'と'val'のデータローダを作成
+    test_dataset = IsicDataset(
+        file_list=test_list,
+        transform=ImageTransform(cfg.image.size, cfg.image.mean, cfg.image.std),
+        phase="test",
+        csv_file=cfg.csv.test,
+        label_name=cfg.csv.label,
+    )
+
+    # 辞書型'train'と'val'と'test'のデータローダを作成
     dataloaders_dict = create_dataloader(
         batch_size=cfg.image.batch_size,
         train_dataset=train_dataset,
         val_dataset=val_dataset,
+        test_dataset=test_dataset,
     )
 
     """
@@ -77,13 +92,15 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    net = models.resnet50(pretrained=True)
+    net = models.resnet18(pretrained=True)
+    log.info(net)
 
-    net.fc = nn.Linear(in_features=2048, out_features=2, bias=True)
+    net.fc = nn.Linear(in_features=512, out_features=2)
     net.train()
 
     # 損失関数の設定
     criterion = nn.CrossEntropyLoss()
+    log.info(net)
 
     # 調整するパラメータの設定
     params_to_update = []
@@ -93,13 +110,18 @@ def main(cfg):
         if name in update_params_names:
             param.requires_grad = True
             params_to_update.append(param)
+            log.info("更新するパラメータ名: " + str(name))
         else:
             param.requires_grad = False
+
+    # 調整するパラメータ名をログに保存
+    log.info(params_to_update)
 
     # 最適化手法の設定
     optimizer = optim.SGD(
         params=params_to_update, lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum
     )
+    log.info(optimizer)
 
     # 学習回数を設定ファイルから読み込む
     num_epochs = cfg.train.num_epochs
@@ -134,7 +156,7 @@ def main(cfg):
         train_acc.append(train_history["train_acc"])
 
         # 検証
-        test_history = test_model(net, dataloaders_dict["test"], criterion)
+        test_history = test_model(net, dataloaders_dict["val"], criterion)
 
         # 検証したlossと認識率のリストを作成
         test_loss.append(test_history["test_loss"])
@@ -155,9 +177,41 @@ def main(cfg):
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
 
+    """
+    # Pytorchのネットワークパラメータのロード
+    # 現在のディレクトリを取得
+    current_dir = pathlib.Path(__file__).resolve().parent
+    print(current_dir)
+    #学習済みのパラメータを使用したいとき
+    load_path = str(current_dir) + "/weights_fine_tuning.pth"
+    load_weights = torch.load(load_path)
+    net.load_state_dict(load_weights)
+    """
+
+    evaluate_history = evaluate_model(net, dataloaders_dict["test"], criterion)
+    print(evaluate_history["confusion_matrix"])
+
+    # 性能評価指標の計算（正解率、適合率、再現率、F1値)
+    efficienct = calculate_efficiency(evaluate_history["confusion_matrix"])
+
+    log.info("正解率: " + str(efficienct["accuracy"]))
+    log.info("適合率: " + str(efficienct["precision"]))
+    log.info("再現率: " + str(efficienct["recall"]))
+    log.info("f1値 :" + str(efficienct["f1"]))
+
+    # 混同行列の作成と表示
+    fig_conf, ax_conf = plt.subplots(figsize=(10, 10))
+    sns.heatmap(
+        evaluate_history["confusion_matrix"], annot=True, fmt="d", cmap="Reds",
+    )
+    ax_conf.set_title("confusion_matrix")
+    ax_conf.set_xlabel("Predicted label")
+    ax_conf.set_ylabel("True label")
+    fig_conf.savefig("confusion_matrix.png")
+
     # パラメータの保存
     current_dir = pathlib.Path(__file__).resolve().parent
-    save_path = current_dir / "weights_fine_tuning.pth"
+    save_path = current_dir / "weights_path_2.pth"
     torch.save(net.state_dict(), save_path)
 
 
