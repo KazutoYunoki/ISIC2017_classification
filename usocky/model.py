@@ -40,8 +40,8 @@ def train_model(net, train_dataloader, criterion, optimizer):
     for inputs, labels in tqdm(train_dataloader, leave=False):
 
         # BCELossを使用する場合labelsを(batch_size, 1)に変更(dtype = float32)
-        labels = labels.view(-1, 1)
-        labels = labels.float()
+        # labels = labels.view(-1, 1)
+        # labels = labels.float()
 
         # GPUにデータを送る
         inputs = inputs.to(device)
@@ -54,15 +54,17 @@ def train_model(net, train_dataloader, criterion, optimizer):
 
             # sigmoidの出力結果を保存
             # log.info(torch.sigmoid(outputs).flatten())
-            outputs = torch.sigmoid(outputs)
+            # outputs = torch.sigmoid(outputs)
+
+            log.info("訓練データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
 
             # outfeatures = 2以上　↓
-            # _, preds = torch.max(outputs, 1)
+            _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            preds = (outputs > 0.5).long()
+            # preds = (outputs > 0.5).long()
             loss.backward()
             optimizer.step()
 
@@ -107,11 +109,11 @@ def test_model(net, test_dataloader, criterion):
     epoch_corrects = 0
 
     for inputs, labels in tqdm(test_dataloader, leave=False):
-
+        """
         # BCELossを使用する場合labelsを(batch_size, 1)に変更(dtype = float32)
         labels = labels.view(-1, 1)
         labels = labels.float()
-
+        """
         # GPUにデータを送る
         inputs = inputs.to(device)
         labels = labels.to(device)
@@ -119,15 +121,16 @@ def test_model(net, test_dataloader, criterion):
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
 
-            outputs = torch.sigmoid(outputs)
+            log.info()
+            log.info("検証データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
 
             # outfeatures = 2 以上　↓
-            # _, preds = torch.max(outputs, 1)
+            _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            preds = (outputs > 0.5).long()
+            # preds = (outputs > 0.5).long()
 
         epoch_loss += loss.item() * inputs.size(0)
         epoch_corrects += torch.sum(preds == labels.data)
@@ -158,8 +161,8 @@ def evaluate_model(net, test_dataloader, criterion):
     for inputs, labels in tqdm(test_dataloader, leave=False):
 
         # BCELossを使用する場合labelsを(batch_size, 1)に変更(dtype = float32)
-        labels = labels.view(-1, 1)
-        labels = labels.float()
+        # labels = labels.view(-1, 1)
+        # labels = labels.float()
 
         # GPUにデータを送る
         inputs = inputs.to(device)
@@ -167,14 +170,14 @@ def evaluate_model(net, test_dataloader, criterion):
 
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
-            outputs = torch.sigmoid(outputs)
-            log.info("sigmoidの出力\n" + str(outputs.flatten()))
+
+            log.info("softmaxの出力\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
-            # _, preds = torch.max(outputs, 1)
+            _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            preds = (outputs > 0.5).long()
+            # preds = (outputs > 0.5).long()
 
         # confusion_matrixの作成
         predlist = torch.cat([predlist, preds.long().view(-1).cuda()])

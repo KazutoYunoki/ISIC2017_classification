@@ -11,6 +11,7 @@ import logging
 import seaborn as sns
 
 from image_transform import ImageTransform
+
 from Dataset import IsicDataset, make_datapath_list, create_dataloader
 from model import train_model, test_model, evaluate_model, calculate_efficiency
 
@@ -91,14 +92,14 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    net = models.vgg16(pretrained=True)
+    net = models.resnet18(pretrained=True)
     log.info(net)
 
-    net.classifier[6] = nn.Linear(in_features=4096, out_features=1)
+    net.fc = nn.Linear(in_features=512, out_features=2)
     net.train()
 
     # 損失関数の設定
-    criterion = nn.BCELoss()
+    criterion = nn.CrossEntropyLoss()
     log.info(net)
 
     # 調整するパラメータの設定

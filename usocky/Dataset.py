@@ -99,6 +99,9 @@ class IsicDataset(data.Dataset):
         img = Image.open(img_path)
         img_transformed = self.transform(img, self.phase)
 
+        # 画像のパス出力
+        # print(img_path)
+
         # 現在のディレクトリを取得
         current_dir = pathlib.Path(__file__).resolve().parent
 
@@ -123,18 +126,20 @@ if __name__ == "__main__":
     train_list = make_datapath_list(
         csv_file="ISIC-2017_Training_Part3_GroundTruth (1).csv",
         data_dir="ISIC-2017_Training_Data",
+        data_id="image_id",
     )
     val_list = make_datapath_list(
         csv_file="ISIC-2017_Validation_Part3_GroundTruth.csv",
         data_dir="ISIC-2017_Validation_Data",
+        data_id="image_id",
     )
-
+    """
     # 画像へのパスがきちんと通っているかの確認
     print(train_list[0])
     print("訓練画像の枚数: " + str(len(train_list)))
     print(val_list[0])
     print("検証画像の枚数: " + str(len(val_list)))
-
+    """
     size = 224
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
@@ -144,6 +149,7 @@ if __name__ == "__main__":
         transform=ImageTransform(size, mean, std),
         phase="train",
         csv_file="ISIC-2017_Training_Part3_GroundTruth (1).csv",
+        label_name="melanoma",
     )
 
     val_dataset = IsicDataset(
@@ -151,8 +157,9 @@ if __name__ == "__main__":
         transform=ImageTransform(size, mean, std),
         phase="val",
         csv_file="ISIC-2017_Validation_Part3_GroundTruth.csv",
+        label_name="melanoma",
     )
 
-    index = 0
-    print(val_dataset.__getitem__(index)[0].size())
-    print(val_dataset.__getitem__(index)[1])
+    for index in range(50):
+        # print(val_dataset.__getitem__(index)[0].size())
+        print(val_dataset.__getitem__(index)[1])

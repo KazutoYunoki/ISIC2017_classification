@@ -10,12 +10,8 @@ train:
   num_epochs: 1
   #updateするパラメータ名
   update_param_names:
-    - classifier.0.weight
-    - classifier.0.bias
-    - classifier.3.weight
-    - classifier.3.bias
-    - classifier.6.weight
-    - classifier.6.bias
+    - fc.weight
+    - fc.bias
 
 #最適化手法のパラメータ
 optimizer:
