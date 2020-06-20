@@ -121,7 +121,7 @@ def test_model(net, test_dataloader, criterion):
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
 
-            log.info()
+       
             log.info("検証データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
@@ -130,8 +130,7 @@ def test_model(net, test_dataloader, criterion):
             _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            # preds = (outputs > 0.5).long()
-
+            # preds = (outputs > 0.5).lon
         epoch_loss += loss.item() * inputs.size(0)
         epoch_corrects += torch.sum(preds == labels.data)
 
