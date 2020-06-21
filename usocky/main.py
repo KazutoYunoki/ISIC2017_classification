@@ -95,7 +95,7 @@ def main(cfg):
     net = models.vgg16(pretrained=True)
     log.info(net)
 
-    net.fc = nn.Linear(in_features=512, out_features=2)
+    net.classifier[6] = nn.Linear(in_features=4096, out_features=3)
     net.train()
 
     # 損失関数の設定

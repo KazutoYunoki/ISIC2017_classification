@@ -51,7 +51,6 @@ def train_model(net, train_dataloader, criterion, optimizer):
 
         with torch.set_grad_enabled(True):
             outputs = net(inputs)
-
             # sigmoidの出力結果を保存
             # log.info(torch.sigmoid(outputs).flatten())
             # outputs = torch.sigmoid(outputs)

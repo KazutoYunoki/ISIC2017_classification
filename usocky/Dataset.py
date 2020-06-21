@@ -161,5 +161,5 @@ if __name__ == "__main__":
     )
 
     for index in range(500):
-        # print(val_dataset.__getitem__(index)[0].size())
+        print(val_dataset.__getitem__(index)[0].size())
         print(val_dataset.__getitem__(index)[1])
