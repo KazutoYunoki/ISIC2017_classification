@@ -149,7 +149,7 @@ if __name__ == "__main__":
         transform=ImageTransform(size, mean, std),
         phase="train",
         csv_file="ISIC-2017_Training_Part3_GroundTruth (1).csv",
-        label_name="melanoma",
+        label_name="skin",
     )
 
     val_dataset = IsicDataset(
@@ -157,9 +157,9 @@ if __name__ == "__main__":
         transform=ImageTransform(size, mean, std),
         phase="val",
         csv_file="ISIC-2017_Validation_Part3_GroundTruth.csv",
-        label_name="melanoma",
+        label_name="skin",
     )
 
-    for index in range(50):
+    for index in range(500):
         # print(val_dataset.__getitem__(index)[0].size())
         print(val_dataset.__getitem__(index)[1])

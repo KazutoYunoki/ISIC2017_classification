@@ -92,7 +92,7 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    net = models.resnet18(pretrained=True)
+    net = models.vgg16(pretrained=True)
     log.info(net)
 
     net.fc = nn.Linear(in_features=512, out_features=2)
@@ -103,24 +103,44 @@ def main(cfg):
     log.info(net)
 
     # 調整するパラメータの設定
-    params_to_update = []
-    update_params_names = cfg.train.update_param_names
+    params_to_update_1 = []
+    params_to_update_2 = []
+    params_to_update_3 = []
+
+    update_param_names_1 = cfg.train.update_param_names_1
+    update_param_names_2 = cfg.train.update_param_names_2
+    update_param_names_3 = cfg.train.update_param_names_3
 
     for name, param in net.named_parameters():
-        if name in update_params_names:
+        if update_param_names_1[0] in name:
             param.requires_grad = True
-            params_to_update.append(param)
-            log.info("更新するパラメータ名: " + str(name))
+            params_to_update_1.append(param)
+            print("params_to_update_1に格納: ", name)
+
+        elif name in update_param_names_2:
+            param.requires_grad = True
+            params_to_update_2.append(param)
+            print("params_to_update_2に格納: ", name)
+        
+        elif name in update_param_names_3:
+            param.requires_grad = True
+            params_to_update_3.append(param)
+            print("params_to_update_3に格納: ",name)
+        
         else:
             param.requires_grad = False
+            print("勾配計算無し。学習しない:", name)
+
 
     # 調整するパラメータ名をログに保存
-    log.info(params_to_update)
+    #log.info(params_to_update)
 
     # 最適化手法の設定
-    optimizer = optim.SGD(
-        params=params_to_update, lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum
-    )
+    optimizer = optim.SGD([
+        {"params":params_to_update_1, "lr" : 1e-4},
+        {"params":params_to_update_2, "lr" : 5e-4},
+        {"params":params_to_update_3, "lr" : 1e-3}
+    ], momentum=0.9)        
     log.info(optimizer)
 
     # 学習回数を設定ファイルから読み込む
@@ -191,6 +211,7 @@ def main(cfg):
     evaluate_history = evaluate_model(net, dataloaders_dict["test"], criterion)
     print(evaluate_history["confusion_matrix"])
 
+    """
     # 性能評価指標の計算（正解率、適合率、再現率、F1値)
     efficienct = calculate_efficiency(evaluate_history["confusion_matrix"])
 
@@ -198,6 +219,7 @@ def main(cfg):
     log.info("適合率: " + str(efficienct["precision"]))
     log.info("再現率: " + str(efficienct["recall"]))
     log.info("f1値 :" + str(efficienct["f1"]))
+    """
 
     # 混同行列の作成と表示
     fig_conf, ax_conf = plt.subplots(figsize=(10, 10))
@@ -211,7 +233,7 @@ def main(cfg):
 
     # パラメータの保存
     current_dir = pathlib.Path(__file__).resolve().parent
-    save_path = current_dir / "weights_path_2.pth"
+    save_path = current_dir / "weights_path_3.pth"
     torch.save(net.state_dict(), save_path)
 
 
