@@ -7,7 +7,7 @@ image:
 
 #モデルのパラメータ
 train:
-  num_epochs: 100
+  num_epochs: 200
   #updateするパラメータ名
   update_param_names:
     - fc.weight
@@ -16,7 +16,7 @@ train:
 #最適化手法のパラメータ
 optimizer:
   algorithm: momentum_SDG
-  lr: 0.00001
+  lr: 0.0001
   momentum: 0.9
 
 #画像のデータが入っているフォルダ(./data/に置く)
