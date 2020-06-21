@@ -7,11 +7,18 @@ image:
 
 #モデルのパラメータ
 train:
-  num_epochs: 100
+  num_epochs: 2
   #updateするパラメータ名
-  update_param_names:
-    - fc.weight
-    - fc.bias
+  update_param_names_1:
+    - features
+  update_param_names_2:
+    - classifier.0.weight
+    - classifier.0.bias
+    - classifier.3.weight
+    - classifier.3.bias
+  update_param_names_3:
+    - classifier.6.weight
+    - classifier.6.bias
 
 #最適化手法のパラメータ
 optimizer:
@@ -28,7 +35,7 @@ data:
 #csvファイル(./data/に置く)
 csv:
   id: image_id
-  label: melanoma
+  label: skin
   train: ISIC-2017_Training_Part3_GroundTruth (1).csv
   val: ISIC-2017_Validation_Part3_GroundTruth.csv
   test: ISIC-2017_Test_v2_Part3_GroundTruth.csv
