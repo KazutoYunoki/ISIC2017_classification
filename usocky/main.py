@@ -92,10 +92,10 @@ def main(cfg):
     print(labels)
     """
     # ネットワークモデルのロード
-    net = models.vgg16(pretrained=True)
+    net = models.resnet50(pretrained=True)
     log.info(net)
 
-    net.classifier[6] = nn.Linear(in_features=4096, out_features=3)
+    net.fc = nn.Linear(in_features=2048, out_features=3)
     net.train()
 
     # 損失関数の設定
@@ -115,21 +115,21 @@ def main(cfg):
         if update_param_names_1[0] in name:
             param.requires_grad = True
             params_to_update_1.append(param)
-            print("params_to_update_1に格納: ", name)
+            log.info("params_to_update_1に格納: " + name)
 
-        elif name in update_param_names_2:
+        elif update_param_names_2[0] in name:
             param.requires_grad = True
             params_to_update_2.append(param)
-            print("params_to_update_2に格納: ", name)
+            log.info("params_to_update_2に格納: " + name)
         
         elif name in update_param_names_3:
             param.requires_grad = True
             params_to_update_3.append(param)
-            print("params_to_update_3に格納: ",name)
+            log.info("params_to_update_3に格納: " + name)
         
         else:
             param.requires_grad = False
-            print("勾配計算無し。学習しない:", name)
+            log.info("勾配計算無し。学習しない:" + name)
 
 
     # 調整するパラメータ名をログに保存
