@@ -12,7 +12,13 @@ import seaborn as sns
 
 from image_transform import ImageTransform
 
-from Dataset import IsicDataset, make_datapath_list, create_dataloader
+from Dataset import (
+    IsicDataset,
+    make_datapath_list,
+    create_dataloader,
+    make_trainset,
+    make_testset,
+)
 from model import train_model, test_model, evaluate_model, calculate_efficiency
 
 
@@ -22,6 +28,7 @@ log = logging.getLogger(__name__)
 
 @hydra.main(config_path="conf/config.yaml")
 def main(cfg):
+    """
     # 訓練データと検証データのパス
     train_list = make_datapath_list(
         csv_file=cfg.csv.train, data_id=cfg.csv.id, data_dir=cfg.data.train_dir
@@ -34,7 +41,7 @@ def main(cfg):
     )
 
     # 画像表示と確認
-    """
+    
     size = 224
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
@@ -51,7 +58,7 @@ def main(cfg):
     plt.imshow(img_transformed)
     plt.show()
 
-    """
+    
     # データセットの作成
     train_dataset = IsicDataset(
         file_list=train_list,
@@ -75,6 +82,30 @@ def main(cfg):
         csv_file=cfg.csv.test,
         label_name=cfg.csv.label,
     )
+    """
+
+    # Imagedatafolderを用いたデータセットの作成(使わない場合はコメントアウト)
+    # 学習用データセット作成
+    train_dataset = make_trainset(
+        dataroot=cfg.data.train_dir,
+        resize=cfg.image.size,
+        mean=cfg.image.mean,
+        std=cfg.image.std,
+    )
+    # 検証用データセット
+    val_dataset = make_testset(
+        dataroot=cfg.data.val_dir,
+        resize=cfg.image.size,
+        mean=cfg.image.mean,
+        std=cfg.image.std,
+    )
+    # 検証用データセット
+    test_dataset = make_testset(
+        dataroot=cfg.data.test_dir,
+        resize=cfg.image.size,
+        mean=cfg.image.mean,
+        std=cfg.image.std,
+    )
 
     # 辞書型'train'と'val'と'test'のデータローダを作成
     dataloaders_dict = create_dataloader(
@@ -84,18 +115,18 @@ def main(cfg):
         test_dataset=test_dataset,
     )
 
-    """
-    #バッチごとの動作確認
-    batch_iterator = iter(dataloader_dict['val'])
+    # バッチごとの動作確認
+    batch_iterator = iter(dataloaders_dict["train"])
     inputs, labels = next(batch_iterator)
+
     print(inputs.size())
     print(labels)
-    """
+
     # ネットワークモデルのロード
     net = models.resnet50(pretrained=True)
     log.info(net)
 
-    net.fc = nn.Linear(in_features=2048, out_features=3)
+    net.fc = nn.Linear(in_features=2048, out_features=2)
     net.train()
 
     # 損失関数の設定
@@ -103,44 +134,26 @@ def main(cfg):
     log.info(net)
 
     # 調整するパラメータの設定
-    params_to_update_1 = []
-    params_to_update_2 = []
-    params_to_update_3 = []
+    params_to_update = []
 
-    update_param_names_1 = cfg.train.update_param_names_1
-    update_param_names_2 = cfg.train.update_param_names_2
-    update_param_names_3 = cfg.train.update_param_names_3
+    update_param_names = cfg.train.update_param_names
 
+    # update_param_namesに含まれているパラメータだけ調整
     for name, param in net.named_parameters():
-        if update_param_names_1[0] in name:
+        if name in update_param_names:
             param.requires_grad = True
-            params_to_update_1.append(param)
-            log.info("params_to_update_1に格納: " + name)
-
-        elif update_param_names_2[0] in name:
-            param.requires_grad = True
-            params_to_update_2.append(param)
-            log.info("params_to_update_2に格納: " + name)
-        
-        elif name in update_param_names_3:
-            param.requires_grad = True
-            params_to_update_3.append(param)
-            log.info("params_to_update_3に格納: " + name)
-        
+            params_to_update.append(param)
+            log.info(name)
         else:
             param.requires_grad = False
-            log.info("勾配計算無し。学習しない:" + name)
-
 
     # 調整するパラメータ名をログに保存
-    #log.info(params_to_update)
+    log.info(params_to_update)
 
     # 最適化手法の設定
-    optimizer = optim.SGD([
-        {"params":params_to_update_1, "lr" : 1e-4},
-        {"params":params_to_update_2, "lr" : 5e-4},
-        {"params":params_to_update_3, "lr" : 1e-3}
-    ], momentum=0.9)        
+    optimizer = optim.SGD(
+        params=params_to_update, lr=cfg.optimizer.lr, momentum=cfg.optimizer.momentum
+    )
     log.info(optimizer)
 
     # 学習回数を設定ファイルから読み込む
@@ -197,21 +210,20 @@ def main(cfg):
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
 
-    """
+    '''
     # Pytorchのネットワークパラメータのロード
     # 現在のディレクトリを取得
     current_dir = pathlib.Path(__file__).resolve().parent
     print(current_dir)
-    #学習済みのパラメータを使用したいとき
+    # 学習済みのパラメータを使用したいとき
     load_path = str(current_dir) + "/weights_fine_tuning.pth"
     load_weights = torch.load(load_path)
     net.load_state_dict(load_weights)
-    """
+    '''
 
     evaluate_history = evaluate_model(net, dataloaders_dict["test"], criterion)
     print(evaluate_history["confusion_matrix"])
 
-    """
     # 性能評価指標の計算（正解率、適合率、再現率、F1値)
     efficienct = calculate_efficiency(evaluate_history["confusion_matrix"])
 
@@ -219,7 +231,6 @@ def main(cfg):
     log.info("適合率: " + str(efficienct["precision"]))
     log.info("再現率: " + str(efficienct["recall"]))
     log.info("f1値 :" + str(efficienct["f1"]))
-    """
 
     # 混同行列の作成と表示
     fig_conf, ax_conf = plt.subplots(figsize=(10, 10))
@@ -233,7 +244,7 @@ def main(cfg):
 
     # パラメータの保存
     current_dir = pathlib.Path(__file__).resolve().parent
-    save_path = current_dir / "weights_path_3.pth"
+    save_path = current_dir / "melanoma_nevi_classifier.pth"
     torch.save(net.state_dict(), save_path)
 
 

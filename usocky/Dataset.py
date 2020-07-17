@@ -3,9 +3,11 @@ import pandas as pd
 from PIL import Image
 import torch
 import torch.utils.data as data
+import torchvision.datasets as dset
 
 import os.path as osp
 from image_transform import ImageTransform
+import torchvision.transforms as transforms
 
 
 def make_datapath_list(csv_file, data_id, data_dir):
@@ -120,9 +122,71 @@ class IsicDataset(data.Dataset):
         return img_transformed, label
 
 
+def make_trainset(dataroot, resize, mean, std):
+    """
+    ImageFolder関数を用いた学習用データの作成
+    """
+    current_dir = pathlib.Path(__file__).resolve().parent
+    print(current_dir)
+
+    # データセットの作成
+    dataset = dset.ImageFolder(
+        root=str(current_dir) + dataroot,
+        transform=transforms.Compose(
+            [
+                transforms.RandomResizedCrop(resize, scale=(0.5, 1.0)),
+                transforms.CenterCrop(resize),
+                transforms.RandomVerticalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        ),
+    )
+
+    return dataset
+
+
+def make_testset(dataroot, resize, mean, std):
+    """
+    ImageFolder関数を用いたテスト用データの作成
+    """
+    current_dir = pathlib.Path(__file__).resolve().parent
+    print(current_dir)
+
+    # データセットの作成
+    dataset = dset.ImageFolder(
+        root=str(current_dir) + dataroot,
+        transform=transforms.Compose(
+            [
+                transforms.RandomResizedCrop(resize, scale=(0.5, 1.0)),
+                transforms.CenterCrop(resize),
+                transforms.RandomVerticalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        ),
+    )
+
+    return dataset
+
+
 # 動作確認
 if __name__ == "__main__":
+    train_dataset = make_trainset(
+        dataroot="/data/skin_data/train",
+        resize=224,
+        mean=(0.485, 0.456, 0.406),
+        std=(0.229, 0.224, 0.225),
+    )
 
+    val_dataset = make_testset(
+        dataroot="/data/skin_data/val",
+        resize=224,
+        mean=(0.485, 0.456, 0.406),
+        std=(0.229, 0.224, 0.225),
+    )
+    print(val_dataset)
+    '''
     train_list = make_datapath_list(
         csv_file="ISIC-2017_Training_Part3_GroundTruth (1).csv",
         data_dir="ISIC-2017_Training_Data",
@@ -163,3 +227,4 @@ if __name__ == "__main__":
     for index in range(500):
         print(val_dataset.__getitem__(index)[0].size())
         print(val_dataset.__getitem__(index)[1])
+    '''

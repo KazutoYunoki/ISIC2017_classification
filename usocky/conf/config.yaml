@@ -9,11 +9,7 @@ image:
 train:
   num_epochs: 100
   #updateするパラメータ名
-  update_param_names_1:
-    - layer3
-  update_param_names_2:
-    - layer4
-  update_param_names_3:
+  update_param_names:
     - fc.weight
     - fc.bias
 
@@ -25,9 +21,9 @@ optimizer:
 
 #画像のデータが入っているフォルダ(./data/に置く)
 data:
-  train_dir: ISIC-2017_Training_Data
-  val_dir: ISIC-2017_Validation_Data
-  test_dir: ISIC-2017_Test_v2_Data
+  train_dir: /data/skin_data/train
+  val_dir: /data/skin_data/val
+  test_dir: /data/skin_data/test
 
 #csvファイル(./data/に置く)
 csv:

@@ -55,7 +55,7 @@ def train_model(net, train_dataloader, criterion, optimizer):
             # log.info(torch.sigmoid(outputs).flatten())
             # outputs = torch.sigmoid(outputs)
 
-            log.info("訓練データの出力値\n" + str(torch.softmax(outputs, 1)))
+            # log.info("訓練データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
 
@@ -120,8 +120,7 @@ def test_model(net, test_dataloader, criterion):
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
 
-       
-            log.info("検証データの出力値\n" + str(torch.softmax(outputs, 1)))
+            # log.info("検証データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
 
