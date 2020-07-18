@@ -158,9 +158,8 @@ def make_testset(dataroot, resize, mean, std):
         root=str(current_dir) + dataroot,
         transform=transforms.Compose(
             [
-                transforms.RandomResizedCrop(resize, scale=(0.5, 1.0)),
+                transforms.Resize(resize),
                 transforms.CenterCrop(resize),
-                transforms.RandomVerticalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
