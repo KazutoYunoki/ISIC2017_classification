@@ -7,7 +7,7 @@ image:
 
 #モデルのパラメータ
 train:
-  num_epochs: 100
+  num_epochs: 50
   #updateするパラメータ名
   update_param_names:
     - fc.weight

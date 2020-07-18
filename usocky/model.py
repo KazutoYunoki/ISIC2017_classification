@@ -180,7 +180,7 @@ def evaluate_model(net, test_dataloader, criterion):
         predlist = torch.cat([predlist, preds.long().view(-1).cuda()])
         truelist = torch.cat([truelist, labels.long().view(-1).cuda()])
         cm = confusion_matrix(
-            truelist.cpu().numpy(), predlist.cpu().numpy(), labels=[0, 1, 2]
+            truelist.cpu().numpy(), predlist.cpu().numpy(), labels=[0, 1]
         )
 
         epoch_loss += loss.item() * inputs.size(0)

@@ -243,8 +243,7 @@ def main(cfg):
     fig_conf.savefig("confusion_matrix.png")
 
     # パラメータの保存
-    current_dir = pathlib.Path(__file__).resolve().parent
-    save_path = current_dir / "melanoma_nevi_classifier.pth"
+    save_path = "./melanoma_nevi_classifier.pth"
     torch.save(net.state_dict(), save_path)
 
 
