@@ -1,5 +1,8 @@
 from torchvision import models
 
-resnet = models.vgg16(pretrained=True)
+net = models.vgg16(pretrained=True)
 
-print(resnet)
+for name, param in net.named_parameters():
+    print(name)
+
+print(net)

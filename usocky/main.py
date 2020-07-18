@@ -123,10 +123,10 @@ def main(cfg):
     print(labels)
 
     # ネットワークモデルのロード
-    net = models.resnet50(pretrained=True)
+    net = models.vgg16(pretrained=True)
     log.info(net)
 
-    net.fc = nn.Linear(in_features=2048, out_features=2)
+    net.classifier[6] = nn.Linear(in_features=4096, out_features=2)
     net.train()
 
     # 損失関数の設定
@@ -210,7 +210,7 @@ def main(cfg):
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
 
-    '''
+    """
     # Pytorchのネットワークパラメータのロード
     # 現在のディレクトリを取得
     current_dir = pathlib.Path(__file__).resolve().parent
@@ -219,7 +219,7 @@ def main(cfg):
     load_path = str(current_dir) + "/weights_fine_tuning.pth"
     load_weights = torch.load(load_path)
     net.load_state_dict(load_weights)
-    '''
+    """
 
     evaluate_history = evaluate_model(net, dataloaders_dict["test"], criterion)
     print(evaluate_history["confusion_matrix"])
