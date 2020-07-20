@@ -40,8 +40,8 @@ def train_model(net, train_dataloader, criterion, optimizer):
     for inputs, labels in tqdm(train_dataloader, leave=False):
 
         # BCELossを使用する場合labelsを(batch_size, 1)に変更(dtype = float32)
-        # labels = labels.view(-1, 1)
-        # labels = labels.float()
+        labels = labels.view(-1, 1)
+        labels = labels.float()
 
         # GPUにデータを送る
         inputs = inputs.to(device)
@@ -52,23 +52,26 @@ def train_model(net, train_dataloader, criterion, optimizer):
         with torch.set_grad_enabled(True):
             outputs = net(inputs)
             # sigmoidの出力結果を保存
-            # log.info(torch.sigmoid(outputs).flatten())
-            # outputs = torch.sigmoid(outputs)
+            log.info(torch.sigmoid(outputs).flatten())
+            outputs = torch.sigmoid(outputs)
 
             # log.info("訓練データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
 
             # outfeatures = 2以上　↓
-            _, preds = torch.max(outputs, 1)
+            # _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            # preds = (outputs > 0.5).long()
+            preds = (outputs > 0.5).long()
             loss.backward()
             optimizer.step()
 
         epoch_loss += loss.item() * inputs.size(0)
-        epoch_corrects += torch.sum(preds == labels.data)
+
+        # epoch_corrects += torch.sum(preds == labels.data)
+        # 　↓BCE使うとき
+        epoch_corrects += torch.sum(preds.long() == labels.data.long())
 
     epoch_loss = epoch_loss / len(train_dataloader.dataset)
     epoch_acc = epoch_corrects.double() / len(train_dataloader.dataset)
@@ -108,29 +111,31 @@ def test_model(net, test_dataloader, criterion):
     epoch_corrects = 0
 
     for inputs, labels in tqdm(test_dataloader, leave=False):
-        """
+
         # BCELossを使用する場合labelsを(batch_size, 1)に変更(dtype = float32)
         labels = labels.view(-1, 1)
         labels = labels.float()
-        """
+
         # GPUにデータを送る
         inputs = inputs.to(device)
         labels = labels.to(device)
 
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
-
+            outputs = torch.sigmoid(outputs)
             # log.info("検証データの出力値\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
 
             # outfeatures = 2 以上　↓
-            _, preds = torch.max(outputs, 1)
+            # _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            # preds = (outputs > 0.5).lon
+            preds = (outputs > 0.5).long()
         epoch_loss += loss.item() * inputs.size(0)
-        epoch_corrects += torch.sum(preds == labels.data)
+        # epoch_corrects += torch.sum(preds == labels.data)
+        # 　↓BCE使うとき
+        epoch_corrects += torch.sum(preds.long() == labels.data.long())
 
     epoch_loss = epoch_loss / len(test_dataloader.dataset)
     epoch_acc = epoch_corrects.double() / len(test_dataloader.dataset)
@@ -158,8 +163,8 @@ def evaluate_model(net, test_dataloader, criterion):
     for inputs, labels in tqdm(test_dataloader, leave=False):
 
         # BCELossを使用する場合labelsを(batch_size, 1)に変更(dtype = float32)
-        # labels = labels.view(-1, 1)
-        # labels = labels.float()
+        labels = labels.view(-1, 1)
+        labels = labels.float()
 
         # GPUにデータを送る
         inputs = inputs.to(device)
@@ -171,10 +176,10 @@ def evaluate_model(net, test_dataloader, criterion):
             log.info("softmaxの出力\n" + str(torch.softmax(outputs, 1)))
 
             loss = criterion(outputs, labels)
-            _, preds = torch.max(outputs, 1)
+            # _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            # preds = (outputs > 0.5).long()
+            preds = (outputs > 0.5).long()
 
         # confusion_matrixの作成
         predlist = torch.cat([predlist, preds.long().view(-1).cuda()])
@@ -186,7 +191,10 @@ def evaluate_model(net, test_dataloader, criterion):
         epoch_loss += loss.item() * inputs.size(0)
         log.info("予測ラベル\n" + str(preds.flatten()))
         log.info("実際のラベル\n" + str(labels.data.flatten()))
-        epoch_corrects += torch.sum(preds == labels.data)
+        # 　↓BCE使うとき
+        epoch_corrects += torch.sum(preds.long() == labels.data.long())
+
+        # epoch_corrects += torch.sum(preds == labels.data)
 
     epoch_loss = epoch_loss / len(test_dataloader.dataset)
     epoch_acc = epoch_corrects.double() / len(test_dataloader.dataset)
