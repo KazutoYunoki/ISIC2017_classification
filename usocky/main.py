@@ -132,7 +132,7 @@ def main(cfg):
     net.train()
 
     # 損失関数の設定
-    
+
     # criterion = nn.CrossEntropyLoss()
     criterion = nn.BCELoss()
     log.info(net)
@@ -185,7 +185,11 @@ def main(cfg):
 
         # 学習
         train_history = train_model(
-            net, dataloaders_dict["train"], criterion, optimizer
+            net,
+            dataloaders_dict["train"],
+            criterion,
+            optimizer,
+            thershold=cfg.thershold,
         )
 
         # 学習したlossと認識率のリストを作成
@@ -193,7 +197,9 @@ def main(cfg):
         train_acc.append(train_history["train_acc"])
 
         # 検証
-        test_history = test_model(net, dataloaders_dict["val"], criterion)
+        test_history = test_model(
+            net, dataloaders_dict["val"], criterion, thershold=cfg.thershold
+        )
 
         # 検証したlossと認識率のリストを作成
         test_loss.append(test_history["test_loss"])
@@ -225,7 +231,9 @@ def main(cfg):
     net.load_state_dict(load_weights)
     """
 
-    evaluate_history = evaluate_model(net, dataloaders_dict["test"], criterion)
+    evaluate_history = evaluate_model(
+        net, dataloaders_dict["test"], criterion, thershold=cfg.thershold
+    )
     print(evaluate_history["confusion_matrix"])
 
     # 性能評価指標の計算（正解率、適合率、再現率、F1値)

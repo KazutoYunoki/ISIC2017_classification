@@ -47,3 +47,5 @@ csv:
   train: ISIC-2017_Training_Part3_GroundTruth (1).csv
   val: ISIC-2017_Validation_Part3_GroundTruth.csv
   test: ISIC-2017_Test_v2_Part3_GroundTruth.csv
+
+thershold: 0.6

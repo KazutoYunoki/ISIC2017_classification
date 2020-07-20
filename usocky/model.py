@@ -6,7 +6,7 @@ from sklearn.metrics import confusion_matrix
 log = logging.getLogger(__name__)
 
 
-def train_model(net, train_dataloader, criterion, optimizer):
+def train_model(net, train_dataloader, criterion, optimizer, thershold):
     """
     学習させるための関数
 
@@ -63,7 +63,7 @@ def train_model(net, train_dataloader, criterion, optimizer):
             # _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            preds = (outputs > 0.5).long()
+            preds = (outputs > thershold).long()
             loss.backward()
             optimizer.step()
 
@@ -81,7 +81,7 @@ def train_model(net, train_dataloader, criterion, optimizer):
     return {"train_loss": epoch_loss, "train_acc": epoch_acc}
 
 
-def test_model(net, test_dataloader, criterion):
+def test_model(net, test_dataloader, criterion, thershold):
     """
     モデルで検証させる関数
 
@@ -131,7 +131,7 @@ def test_model(net, test_dataloader, criterion):
             # _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            preds = (outputs > 0.5).long()
+            preds = (outputs > thershold).long()
         epoch_loss += loss.item() * inputs.size(0)
         # epoch_corrects += torch.sum(preds == labels.data)
         # 　↓BCE使うとき
@@ -145,7 +145,7 @@ def test_model(net, test_dataloader, criterion):
     return {"test_loss": epoch_loss, "test_acc": epoch_acc}
 
 
-def evaluate_model(net, test_dataloader, criterion):
+def evaluate_model(net, test_dataloader, criterion, thershold):
 
     # GPU初期設定
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -180,7 +180,7 @@ def evaluate_model(net, test_dataloader, criterion):
             # _, preds = torch.max(outputs, 1)
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
-            preds = (outputs > 0.5).long()
+            preds = (outputs > thershold).long()
 
         # confusion_matrixの作成
         predlist = torch.cat([predlist, preds.long().view(-1).cuda()])
