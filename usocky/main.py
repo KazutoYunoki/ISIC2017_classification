@@ -133,8 +133,8 @@ def main(cfg):
 
     # 損失関数の設定
     
-    # criterion = nn.CrossEntropyLoss()
-    criterion = nn.BCELoss()
+    criterion = nn.CrossEntropyLoss()
+    # criterion = nn.BCELoss()
     log.info(net)
 
     # 調整するパラメータの設定
