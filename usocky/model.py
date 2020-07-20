@@ -172,6 +172,7 @@ def evaluate_model(net, test_dataloader, criterion):
 
         with torch.set_grad_enabled(False):
             outputs = net(inputs)
+            outputs = torch.sigmoid(outputs)
             log.info("sigmoidの出力\n" + str(torch.sigmoid(outputs).flatten()))
             # log.info("softmaxの出力\n" + str(torch.softmax(outputs, 1)))
 
@@ -180,10 +181,7 @@ def evaluate_model(net, test_dataloader, criterion):
 
             # 予測ラベルの閾値処理　閾値以上なら1、以下なら0
             preds = (outputs > 0.5).long()
-            #print(preds.shape)
-           # print(labels.shape)
-            print(preds)
-            print(labels)
+
         # confusion_matrixの作成
         predlist = torch.cat([predlist, preds.long().view(-1).cuda()])
         truelist = torch.cat([truelist, labels.long().view(-1).cuda()])
