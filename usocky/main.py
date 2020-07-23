@@ -220,17 +220,6 @@ def main(cfg):
     ax_acc.set_xlabel("epoch")
     fig_acc.savefig("acc.png")
 
-    """
-    # Pytorchのネットワークパラメータのロード
-    # 現在のディレクトリを取得
-    current_dir = pathlib.Path(__file__).resolve().parent
-    print(current_dir)
-    # 学習済みのパラメータを使用したいとき
-    load_path = str(current_dir) + "/weights_fine_tuning.pth"
-    load_weights = torch.load(load_path)
-    net.load_state_dict(load_weights)
-    """
-
     evaluate_history = evaluate_model(
         net, dataloaders_dict["test"], criterion, thershold=cfg.thershold
     )
