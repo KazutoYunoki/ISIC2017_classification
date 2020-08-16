@@ -36,9 +36,9 @@ optimizer:
 
 #画像のデータが入っているフォルダ(./data/に置く)
 data:
-  train_dir: /data/skin_data/train
-  val_dir: /data/skin_data/val
-  test_dir: /data/skin_data/test
+  train_dir: /data/ISIC-2017_Training_Data
+  val_dir: /data/ISIC-2017_Validation_Data
+  test_dir: /data/ISIC-2017_Test_v2_Data
 
 #csvファイル(./data/に置く)
 csv:
