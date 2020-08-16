@@ -5,9 +5,49 @@ import torch
 import torch.utils.data as data
 import torchvision.datasets as dset
 
+import os
 import os.path as osp
+import shutil
 from image_transform import ImageTransform
 import torchvision.transforms as transforms
+
+
+def make_split_data(ori_dir, csv_file):
+    """
+    フォルダを作成して、画像のファイルをラベルごとに分ける
+
+    Parameters
+    ---------
+    ori_dir: string
+        分けたい画像が入っている元のディレクトリ(./data直下に配置)
+    """
+    # 現在のディレクトリを取得
+    current_dir = pathlib.Path(__file__).resolve().parent
+    print(current_dir)
+
+    # 3種類の空のデータフォルダを作成
+    os.makedirs(str(current_dir) + "/data/" + ori_dir + "/0", exist_ok=True)
+    os.makedirs(str(current_dir) + "/data/" + ori_dir + "/1", exist_ok=True)
+    os.makedirs(str(current_dir) + "/data/" + ori_dir + "/2", exist_ok=True)
+
+    # 画像データが入っているpath_list
+    data_dir = make_datapath_list(csv_file, "image_id", ori_dir)
+
+    # csvファイル読み込み
+    re_csv = pd.read_csv(current_dir / "data" / csv_file)
+
+    # 画像のラベルをリストして取得
+    skin_label = re_csv["skin"]
+
+    for i in range(len(data_dir)):
+        # ラベルの値を取得
+        label = skin_label[i]
+        shutil.move(
+            data_dir[i], str(current_dir) + "/data/" + ori_dir + "/" + str(label)
+        )
+
+    print(os.listdir("./data/" + ori_dir + "/0"))
+    print(os.listdir("./data/" + ori_dir + "/1"))
 
 
 def make_datapath_list(csv_file, data_id, data_dir):
@@ -171,59 +211,10 @@ def make_testset(dataroot, resize, mean, std):
 
 # 動作確認
 if __name__ == "__main__":
-    train_dataset = make_trainset(
-        dataroot="/data/skin_data/train",
-        resize=224,
-        mean=(0.485, 0.456, 0.406),
-        std=(0.229, 0.224, 0.225),
+    make_split_data(
+        "ISIC-2017_Validation_Data", "ISIC-2017_Validation_Part3_GroundTruth.csv"
     )
-
-    val_dataset = make_testset(
-        dataroot="/data/skin_data/val",
-        resize=224,
-        mean=(0.485, 0.456, 0.406),
-        std=(0.229, 0.224, 0.225),
+    make_split_data(
+        "ISIC-2017_Training_Data", "ISIC-2017_Training_Part3_GroundTruth (1).csv"
     )
-    print(val_dataset)
-    '''
-    train_list = make_datapath_list(
-        csv_file="ISIC-2017_Training_Part3_GroundTruth (1).csv",
-        data_dir="ISIC-2017_Training_Data",
-        data_id="image_id",
-    )
-    val_list = make_datapath_list(
-        csv_file="ISIC-2017_Validation_Part3_GroundTruth.csv",
-        data_dir="ISIC-2017_Validation_Data",
-        data_id="image_id",
-    )
-    """
-    # 画像へのパスがきちんと通っているかの確認
-    print(train_list[0])
-    print("訓練画像の枚数: " + str(len(train_list)))
-    print(val_list[0])
-    print("検証画像の枚数: " + str(len(val_list)))
-    """
-    size = 224
-    mean = (0.485, 0.456, 0.406)
-    std = (0.229, 0.224, 0.225)
-    # データセットのサイズとラベルの確認
-    train_dataset = IsicDataset(
-        file_list=train_list,
-        transform=ImageTransform(size, mean, std),
-        phase="train",
-        csv_file="ISIC-2017_Training_Part3_GroundTruth (1).csv",
-        label_name="skin",
-    )
-
-    val_dataset = IsicDataset(
-        file_list=val_list,
-        transform=ImageTransform(size, mean, std),
-        phase="val",
-        csv_file="ISIC-2017_Validation_Part3_GroundTruth.csv",
-        label_name="skin",
-    )
-
-    for index in range(500):
-        print(val_dataset.__getitem__(index)[0].size())
-        print(val_dataset.__getitem__(index)[1])
-    '''
+    make_split_data("ISIC-2017_Test_v2_Data", "ISIC-2017_Test_v2_Part3_GroundTruth.csv")
