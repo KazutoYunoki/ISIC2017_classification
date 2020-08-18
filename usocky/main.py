@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import pathlib
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,17 +9,14 @@ import hydra
 import logging
 import seaborn as sns
 
-from image_transform import ImageTransform
 
 from Dataset import (
-    IsicDataset,
-    make_datapath_list,
     create_dataloader,
     make_trainset,
     make_testset,
 )
 from model import train_model, test_model, evaluate_model, calculate_efficiency
-
+from network import select_model
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -122,34 +118,16 @@ def main(cfg):
     print(inputs.size())
     print(labels)
 
-    # ネットワークモデルのロード
-    net = models.vgg16_bn(pretrained=True)
+    # ネットワークモデルとパラメータのロード
+    net, params_to_update = select_model(cfg.network)
     log.info(net)
 
-    net.classifier[6] = nn.Linear(in_features=4096, out_features=1)
-    net.classifier[2] = nn.Dropout(p=0.6)
-    net.classifier[5] = nn.Dropout(p=0.6)
     net.train()
 
     # 損失関数の設定
-
     # criterion = nn.CrossEntropyLoss()
     criterion = nn.BCELoss()
     log.info(net)
-
-    # 調整するパラメータの設定
-    params_to_update = []
-
-    update_param_names = cfg.train.update_param_names
-
-    # update_param_namesに含まれているパラメータだけ調整
-    for name, param in net.named_parameters():
-        if name in update_param_names:
-            param.requires_grad = True
-            params_to_update.append(param)
-            log.info(name)
-        else:
-            param.requires_grad = False
 
     # 調整するパラメータ名をログに保存
     log.info(params_to_update)
@@ -161,7 +139,7 @@ def main(cfg):
     log.info(optimizer)
 
     # 学習回数を設定ファイルから読み込む
-    num_epochs = cfg.train.num_epochs
+    num_epochs = cfg.num_epochs
 
     # GPU初期設定
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

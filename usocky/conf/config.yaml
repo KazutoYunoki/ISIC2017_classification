@@ -5,28 +5,9 @@ image:
   std: [0.229, 0.224, 0.225]
   batch_size: 32
 
-#モデルのパラメータ
-train:
-  num_epochs: 300
-  #updateするパラメータ名
-  update_param_names:
-    - features.19.weight
-    - features.19.bias
-    - features.21.weight
-    - features.21.bias
-    - features.24.weight
-    - features.24.bias
-    - features.26.weight
-    - features.26.bias
-    - features.28.weight
-    - features.28.bias
-    - classifier.0.weight
-    - classifier.0.bias
-    - classifier.3.weight
-    - classifier.3.bias
-    - classifier.6.weight
-    - classifier.6.bias
+network: resnet50
 
+num_epochs: 100
 
 #最適化手法のパラメータ
 optimizer:
