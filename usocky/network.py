@@ -9,6 +9,9 @@ def select_model(network_name):
     if network_name == "resnet50":
         net, params_to_update = resnet_model()
 
+    if network_name == "alexnet":
+        net, params_to_update = alex_model()
+
     return net, params_to_update
 
 
@@ -92,8 +95,27 @@ def resnet_model():
     return net, params_to_update
 
 
-if __name__ == "__main__":
-    net = resnet_model()
+def alex_model():
+    net = models.alexnet(pretrained=True)
+    net.classifier[6] = nn.Linear(in_features=4096, out_features=1)
 
+    update_param_names = [
+        "classifier.1.weight",
+        "classifier.1.bias",
+        "classifier.4.weight",
+        "classifier.4.bias",
+        "classifier.6.weight",
+        "classifier.6.bias",
+    ]
+
+    params_to_update = create_update_param_list(net, update_param_names)
+
+    return net, params_to_update
+
+
+if __name__ == "__main__":
+    net = alex_model()
+
+    print(net)
     for name, param in net.named_parameters():
         print(name)
